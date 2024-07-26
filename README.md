@@ -4,6 +4,7 @@ This project provides a pipeline to ingest data, serve it using FastAPI, run tes
 
 ## Table of Contents
 1. [Setup and Installation](#setup-and-installation)
+2. [Using AWS Bedrock](#using-aws-bedrock)
 2. [Ingestion](#ingestion)
 3. [Starting the FastAPI Server](#starting-the-fastapi-server)
 4. [Running Tests with Pytest](#running-tests-with-pytest)
@@ -13,26 +14,31 @@ This project provides a pipeline to ingest data, serve it using FastAPI, run tes
 
 ## Setup and Installation
 
-To set up the project, install the necessary dependencies listed in `requirements.txt`.
+1. **Clone the repository** (if applicable) or download the script.
 
-\`\`\`bash
+2. **Create and Activate a Virtual Environment**:
+   Creating a virtual environment is a best practice to manage dependencies and isolate your project environment.
+
+   - **For Windows**:
+     ```bash
+     python -m venv venv
+     venv\Scripts\activate
+     ```
+
+   - **For macOS and Linux**:
+     ```bash
+     python3 -m venv venv
+     source venv/bin/activate
+     ```
+
+   This will create a virtual environment named `venv` and activate it. Once activated, your command prompt will change to show the name of the environment.
+
+3. **Dependencies**
+Install the necessary dependencies listed in `requirements.txt`.
+
+```bash
 pip install -r requirements.txt
-\`\`\`
-
-## Ingestion
-
-The ingestion process is handled by the script `ingest.py`. This script reads data from the provided sources and processes it for further use.
-
-### Running the Ingestion Script
-
-To run the ingestion script, navigate to the `src` directory and execute:
-
-\`\`\`bash
-python ingest.py
-\`\`\`
-
-Ensure all necessary data sources are accessible and properly configured in the script.
-
+```
 
 ## Using AWS Bedrock
 
@@ -45,7 +51,26 @@ AWS Bedrock is a service for deploying and managing machine learning models. To 
    - Run `aws configure` and enter your AWS credentials (Access Key, Secret Key, region, etc.).
 
 3. **Deploy and Manage Models:**
-   - Use the AWS Bedrock CLI commands to deploy and manage your machine learning models. For detailed instructions, refer to the [AWS Bedrock documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html).
+   - Use the AWS Bedrock CLI commands to deploy and manage your machine learning models. For detailed instructions, refer to the [AWS Bedrock documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html)
+
+## Ingestion
+
+The ingestion process is handled by the script `ingest.py`. This script reads data from the provided sources and processes it for further use.
+
+### Running the Ingestion Script
+
+To run the ingestion script execute:
+
+```bash
+python src/ingest.py /path/to/file1.pdf /path/to/file2.txt /path/to/file3.pdf
+```
+
+Parameters:
+
+	•	Replace /path/to/file1.pdf, /path/to/file2.txt, etc., with the actual paths to your PDF and TXT files.
+
+Ensure all necessary data sources are accessible and properly configured in the script.
+
 
 ## Starting the FastAPI Server
 
@@ -55,9 +80,9 @@ The API is powered by FastAPI, which is a modern, fast (high-performance) web fr
 
 To start the FastAPI server, execute the following command in the `src` directory:
 
-\`\`\`bash
+```bash
 uvicorn main:app --reload
-\`\`\`
+```
 
 The server will start on `http://127.0.0.1:8000`. The `--reload` flag is useful during development as it reloads the server upon changes.
 
@@ -67,13 +92,13 @@ Testing is an integral part of the development process. We use Pytest to ensure 
 
 ### Running the Tests
 
-Tests are located in the `tests` directory. To run the tests, use the following command:
+To run the test, use the following command:
 
-\`\`\`bash
-pytest tests/
-\`\`\`
+```bash
+pytest pytest_fastapi.py
+```
 
-This command will discover and run all the test cases defined in the `tests` directory.
+This command will discover and run all the unit test cases.
 
 ## API Documentation and Testing with Swagger
 
@@ -93,9 +118,9 @@ Streamlit is used for interactive visualizations and data presentation. To run t
 2. Navigate to the directory containing the Streamlit script (`app.py` in your project structure).
 3. Run the following command:
 
-\`\`\`bash
+```bash
 streamlit run app.py
-\`\`\`
+```
 
 The Streamlit app will be accessible at `http://localhost:8501`.
 

@@ -4,7 +4,7 @@ import psycopg2
 from psycopg2.extras import Json
 from sentence_transformers import SentenceTransformer
 from langchain_aws import ChatBedrock
-
+from src.prompts import CLAUDE_SYSTEM_MESSAGE, CLAUDE_USER_MESSAGE
 
 # FastAPI app initialization
 app = FastAPI()
@@ -26,9 +26,25 @@ llm = ChatBedrock(
     model_kwargs=dict(temperature=0),
 )
 
-
 def get_db_connection():
     return psycopg2.connect(**DATABASE_CONFIG)
+
+def create_feedback_table():
+    # Ensure the feedback table exists
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS feedback (
+                    id SERIAL PRIMARY KEY,
+                    response_content TEXT NOT NULL,
+                    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            conn.commit()
+
+# Create feedback table if it does not exist
+create_feedback_table()
 
 # Initialize SentenceTransformer model
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -60,7 +76,7 @@ async def get_response(request: PromptRequest):
         # Assuming that we concatenate the top documents as context
         context = " ".join([row[0] for row in rows])
 
-        # Generate a response using the context (assuming you have a separate function to generate responses)
+        # Generate a response using the context
         response = generate_response(prompt, context)
 
         return {"response": response}
@@ -71,29 +87,24 @@ async def get_response(request: PromptRequest):
 @app.post("/submit-feedback/")
 async def submit_feedback(request: FeedbackRequest):
     try:
-        with open("feedback.txt", "a") as f:
-            f.write(f"Response: {request.response_content}\n")
-            f.write(f"Rating: {request.rating} stars\n\n")
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO feedback (response_content, rating)
+                    VALUES (%s, %s)
+                """, (request.response_content, request.rating))
+            conn.commit()
         return {"message": "Feedback saved."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 def generate_response(prompt, context):
-    # Implement your language model call here using context and prompt
     try:
         messages = [
-            {"role": "system", "content": "You are a highly knowledgeable AI chatbot designed to provide technical support for a tech company specializing in consumer electronics. Utilizing a Retrieval-Augmented Generation (RAG) approach, you are to act as a troubleshooter based on the information provided. You have access to a comprehensive knowledge base that includes product manuals, FAQ documents, user forums, and help articles. Your primary goal is to assist users in troubleshooting common issues, provide step-by-step guides, and offer information on warranty and repair services. Use only the information available in the provided context to generate responses. If the necessary information is not available, clearly state “Information not available.” If more information is needed to provide an accurate response, ask specific follow-up questions to gather the required details from the user."},
-            {"role": "user", "content": f""" Provide detailed instructions based on the specific model, referencing the available product manual and troubleshooting steps. Additionally, suggest contacting customer service or provide warranty information only if such details are explicitly provided in the context.
-             
-            Information: {context}
-            
-            question: {prompt} 
-
-            Don't say 'Based on the information provided'
-            If answer is available start with 'Happy to help....'  if not say 'Apologies! I don't have information at the moment regarding the question'"""}
+            {"role": "system", "content": CLAUDE_SYSTEM_MESSAGE},
+            {"role": "user", "content": CLAUDE_USER_MESSAGE.format(context=context, prompt=prompt)}
         ]
         response = llm.invoke(messages)
         return response.content
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    

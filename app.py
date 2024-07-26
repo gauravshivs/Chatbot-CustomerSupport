@@ -3,7 +3,7 @@ import requests
 
 st.title("Product Help Bot")
 
-backend_url = "http://localhost:8000"  # Change to your FastAPI URL if hosted differently
+backend_url = "http://127.0.0.1:8000"
 
 # Initialize chat history
 if "messages" not in st.session_state:

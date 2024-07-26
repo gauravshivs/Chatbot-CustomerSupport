@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from main import app, get_db_connection  # Import your app and necessary functions
+from src.main import app 
 from unittest.mock import patch, MagicMock
 
 # Create a TestClient instance
@@ -8,7 +8,7 @@ client = TestClient(app)
 
 @pytest.fixture
 def mock_db():
-    with patch("main.get_db_connection") as mock:
+    with patch("src.main.get_db_connection") as mock:
         # Create a mock connection and cursor
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -20,14 +20,14 @@ def test_get_response(mock_db):
     # Arrange
     prompt = "How to install updates?"
     # Mock the fetchall method on the cursor to return the desired output
-    mock_db.fetchall.return_value = [("Happy to help!!",)]
+    mock_db.fetchall.return_value = [("To install updates, please follow the instructions provided in the documentation.",)]
 
     # Act
     response = client.post("/get-response/", json={"prompt": prompt})
 
     # Assert
     assert response.status_code == 200
-   
+    
 
 def test_submit_feedback():
     # Arrange
