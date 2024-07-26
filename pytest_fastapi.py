@@ -23,7 +23,7 @@ def test_get_response(mock_db):
     mock_db.fetchall.return_value = [("To install updates, please follow the instructions provided in the documentation.",)]
 
     # Act
-    response = client.post("/get-response/", json={"prompt": prompt})
+    response = client.post("/get-response/", json={"history" : '[]',"prompt": prompt})
 
     # Assert
     assert response.status_code == 200

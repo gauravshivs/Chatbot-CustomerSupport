@@ -23,7 +23,7 @@ model_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 # Initialize the ChatBedrock model
 llm = ChatBedrock(
     model_id=model_id,
-    model_kwargs=dict(temperature=0),
+    model_kwargs=dict(temperature=0.2),
 )
 
 def get_db_connection():
@@ -51,6 +51,7 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # Pydantic models for request and response
 class PromptRequest(BaseModel):
+    history: str
     prompt: str
 
 class FeedbackRequest(BaseModel):
@@ -60,6 +61,7 @@ class FeedbackRequest(BaseModel):
 @app.post("/get-response/")
 async def get_response(request: PromptRequest):
     try:
+        history = request.history
         prompt = request.prompt
         prompt_embedding = model.encode(prompt).tolist()
 
@@ -77,7 +79,7 @@ async def get_response(request: PromptRequest):
         context = " ".join([row[0] for row in rows])
 
         # Generate a response using the context
-        response = generate_response(prompt, context)
+        response = generate_response(history, prompt, context)
 
         return {"response": response}
 
@@ -98,11 +100,11 @@ async def submit_feedback(request: FeedbackRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def generate_response(prompt, context):
+def generate_response(history, prompt, context):
     try:
         messages = [
             {"role": "system", "content": CLAUDE_SYSTEM_MESSAGE},
-            {"role": "user", "content": CLAUDE_USER_MESSAGE.format(context=context, prompt=prompt)}
+            {"role": "user", "content": CLAUDE_USER_MESSAGE.format(context=context, prompt=prompt, history=history)}
         ]
         response = llm.invoke(messages)
         return response.content

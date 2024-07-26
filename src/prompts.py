@@ -7,9 +7,12 @@ Provide detailed instructions based on the specific model, referencing the avail
              
 Information: {context}
 
+ChatHistory: {history}
+
 Question: {prompt} 
 
+
 Don't say 'Based on the information provided'
-If answer is available start with 'Happy to help....'  if not say 'Apologies! I don't have information at the moment regarding the question
+If history is provided then follow up smartly, If answer is available start with 'Happy to help....'  if not say 'Apologies! I don't have information at the moment regarding the question, also if questions are general greetings feel free to greet back and ask 'How can I help today?'
 
 """

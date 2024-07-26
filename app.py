@@ -15,20 +15,23 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # User input
-if prompt := st.chat_input("What is up?"):
+if prompt := st.chat_input("How can I help you today?"):
     # Display user message in chat message container
     with st.chat_message("user"):
         st.markdown(prompt)
+    
+    # Send prompt to FastAPI backend and get response
+    response = requests.post(f"{backend_url}/get-response/", json={"history": str(st.session_state.messages),"prompt": prompt}).json()
+
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Send prompt to FastAPI backend and get response
-    response = requests.post(f"{backend_url}/get-response/", json={"prompt": prompt}).json()
     response_content = response.get("response", "Sorry, something went wrong.")
     
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
         st.markdown(response_content)
+       
     # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": response_content})
 
@@ -41,3 +44,5 @@ if prompt := st.chat_input("What is up?"):
             "rating": stars
         }).json()
         st.success(feedback_response.get("message", "Feedback saved."))
+
+    
