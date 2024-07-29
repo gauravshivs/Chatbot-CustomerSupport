@@ -13,7 +13,6 @@ if 'selected_rating' not in st.session_state:
     st.session_state.selected_rating = 1
 
 options=[1, 2, 3, 4, 5]
-st.write(options.index(st.session_state.selected_rating))
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
